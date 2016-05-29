@@ -6,6 +6,7 @@
     tools:context=".Browser">
 
     <LinearLayout
+        android:background="#ffffff"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -52,7 +53,8 @@
         android:layout_alignParentBottom="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:id="@+id/linearLayout">
+        android:id="@+id/linearLayout"
+        android:background="#ffffff">
 
         <ImageView
             android:layout_weight="1"
