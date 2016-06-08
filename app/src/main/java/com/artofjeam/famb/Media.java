@@ -3,14 +3,17 @@ package com.artofjeam.famb;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 
 /**
  * Created by jeam999 on 30.05.2016.
  */
-public class Media extends Activity implements View.OnClickListener {
+public class Media extends FragmentActivity implements View.OnClickListener {
     Button Prev,Pause,Next;
     private Intent intent;
 
@@ -61,5 +64,20 @@ public class Media extends Activity implements View.OnClickListener {
                 }
                 break;
         }
+    }
+
+    @Override
+    public void onDestroy(){
+        // Очистите все ресурсы. Это касается завершения работы
+        // потоков, закрытия соединений с базой данных и т. д.
+        this.overridePendingTransition(R.anim.anim_slide_in_left,R.anim.anim_slide_out_left);
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+            finish();
+            this.overridePendingTransition(R.anim.anim_slide_in_left,R.anim.anim_slide_out_left);
+
     }
 }

@@ -62,6 +62,8 @@ public class Browser extends Activity {
             changeForward();
         } else {
             super.onBackPressed();
+            finish();
+            this.overridePendingTransition(R.anim.anim_slide_in_right,R.anim.anim_slide_out_right);
         }
     }
     public void changeBack(){
@@ -112,6 +114,11 @@ public class Browser extends Activity {
 
     }
 
+    public void close(View view) {
+        finish();
+        this.overridePendingTransition(R.anim.anim_slide_in_right,R.anim.anim_slide_out_right);
+    }
+
     private class MyWebViewClient extends WebViewClient
     {
         @Override
@@ -129,5 +136,15 @@ public class Browser extends Activity {
             return true;
         }
     }
+
+
+    @Override
+    public void onDestroy(){
+        // Очистите все ресурсы. Это касается завершения работы
+        // потоков, закрытия соединений с базой данных и т. д.
+        this.overridePendingTransition(R.anim.anim_slide_in_right,R.anim.anim_slide_out_right);
+        super.onDestroy();
+    }
+
 }
 
