@@ -3,6 +3,7 @@ package com.artofjeam.famb;
 /**
  * Created by jeam999 on 09.06.2016.
  */
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,9 +43,11 @@ public class Media extends Activity {
     ArrayList<Music> library;
     MusicViewAdapter mMusicViewAdapter;
     ImageView PlayPauseButton;
+    ImageView NextBTN;
     SeekBar mSeekBar;
     TextView mTotalTime;
     TextView mCurrentTime;
+    TextView curentTrack;
     Spinner mSpinner;
     RelativeLayout mActions;
 
@@ -55,7 +58,7 @@ public class Media extends Activity {
     boolean mBound = false;
 
     List<String> filePaths = null;
-    String typeOfOrders[] = {"Title","Artist"};
+    String typeOfOrders[] = {"Title", "Artist"};
 
     int state;
 
@@ -68,6 +71,7 @@ public class Media extends Activity {
 
         final FileFlattener ff = new FileFlattener();
 
+        curentTrack=(TextView)findViewById(R.id.artandtitle);
         listOfFiles = (ListView) findViewById(R.id.listoffiles);
         mMusicViewAdapter = new MusicViewAdapter(this, R.layout.musicview, library);
         listOfFiles.setAdapter(mMusicViewAdapter);
@@ -80,14 +84,14 @@ public class Media extends Activity {
         });
 
         mSpinner = (Spinner) findViewById(R.id.order_selection);
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,typeOfOrders);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, typeOfOrders);
         mSpinner.setAdapter(spinnerAdapter);
         mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
                 Collections.sort(library, getComparitor(position));
-                if(mBound)
+                if (mBound)
                     mService.changeQueue(library);
                 mMusicViewAdapter.notifyDataSetChanged();
             }
@@ -98,15 +102,15 @@ public class Media extends Activity {
         });
 
         mActions = (RelativeLayout) findViewById(R.id.actions);
-        final int origin[] = {-1,-1};
+        final int origin[] = {-1, -1};
         mActions.setOnTouchListener(new OnTouchListener() {
 
             @Override
             public boolean onTouch(View view, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN){
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     origin[0] = (int) event.getX();
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    int distance = ((int)event.getX()) - origin[0];
+                    int distance = ((int) event.getX()) - origin[0];
                     if (distance > view.getWidth() / 5 * 2)
                         mService.playNext();
                     else if (-distance > view.getWidth() / 5 * 2)
@@ -119,6 +123,8 @@ public class Media extends Activity {
         });
 
         PlayPauseButton = (ImageView) findViewById(R.id.playpausebutton);
+        NextBTN= (ImageView) findViewById(R.id.nextbutton);
+        NextBTN.setClickable(false);
         PlayPauseButton.setClickable(false);
 
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
@@ -131,10 +137,10 @@ public class Media extends Activity {
         mCurrentTime = (TextView) findViewById(R.id.current_time);
         mCurrentTime.setText("0:00 ");
 
-        defineServiceConnection();	// we define our service connection mConnection
+        defineServiceConnection();    // we define our service connection mConnection
         bindService(new Intent(this, MusicPlayerService.class), mConnection, Context.BIND_AUTO_CREATE);
 
-        createLibrary(ff);	// create the library by grabbing all the files
+        createLibrary(ff);    // create the library by grabbing all the files
     }
 
     private void setOnSeekBarChangeListener() {
@@ -176,7 +182,6 @@ public class Media extends Activity {
                 startService(new Intent(Media.this, MusicPlayerService.class));
                 mBinder = (MusicPlayerServiceBinder) service;
                 mService = mBinder.getService(new SeekBarTextCallback() {
-
                     @Override
                     public void setTotalTime(String time) {
                         if (mTotalTime != null)
@@ -189,21 +194,28 @@ public class Media extends Activity {
                             mCurrentTime.setText(time);
                     }
                 });
+                //curentTrack.setText(mService.);
                 state = mService.getState();
                 setPlayPauseOnClickListener();
+                NextBTN.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setNextOnClickListener();
+                    }
+                });
                 mService.registerSeekBar(mSeekBar);
                 mBound = true;
 
                 if (filePaths != null)
                     initQueue();
 
-                Log.d(getApplicationContext().toString(),"Service is connected and good to go");
+                Log.d(getApplicationContext().toString(), "Service is connected and good to go");
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 mBound = false;
-                Log.d(getApplicationContext().toString(),"Service is disconnected and good to go");
+                Log.d(getApplicationContext().toString(), "Service is disconnected and good to go");
             }
         };
     }
@@ -212,6 +224,7 @@ public class Media extends Activity {
         mService.addMusicToQueue(library);
         mService.playNext();
         PlayPauseButton.setClickable(true);
+        NextBTN.setClickable(true);
     }
 
     private void createLibrary(final FileFlattener ff) {
@@ -226,7 +239,7 @@ public class Media extends Activity {
             @Override
             protected void onPostExecute(Void params) {
                 filePaths = ff.getFlattenedFiles();
-                Log.d(this.toString(),"Done getting the files from the file flatenner");
+                Log.d(this.toString(), "Done getting the files from the file flatenner");
 
                 for (String filePath : filePaths) {
                     library.add(new Music(filePath));
@@ -255,7 +268,11 @@ public class Media extends Activity {
 
     }
 
-    private void setPlayPauseOnClickListener(){
+    public void setNextOnClickListener() {
+        mService.playNext();
+    }
+
+    private void setPlayPauseOnClickListener() {
         PlayPauseButton.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -263,7 +280,7 @@ public class Media extends Activity {
                 if (mBound) {
                     state = mService.changeState();
 
-                    switch (state){
+                    switch (state) {
                         case MusicPlayerService.PLAYING:
                             PlayPauseButton.setImageResource(R.drawable.pause);
                             break;
